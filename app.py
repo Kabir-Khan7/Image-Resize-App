@@ -26,7 +26,7 @@ if uploaded_file is not None:
     
     # Display original image
     st.subheader("Original Image")
-    st.image(img, caption=f"Original Size: {original_width}x{original_height}", use_column_width=True)
+    st.image(img, caption=f"Original Size: {original_width}x{original_height}", use_container_width=True)
 
     # User input for new size
     st.subheader("Resize Options")
@@ -41,7 +41,7 @@ if uploaded_file is not None:
 
     # Show resized image
     st.subheader("Resized Image")
-    st.image(resized_img_rgb, caption=f"New Size: {new_width}x{new_height}", use_column_width=False)
+    st.image(resized_img_rgb, caption=f"New Size: {new_width}x{new_height}", use_container_width=False)
 
     # Show shape details
     st.text(f"Original Shape: {img_bgr.shape}")
