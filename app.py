@@ -5,7 +5,7 @@ from PIL import Image
 import io
 
 # Set page configuration
-st.set_page_config(page_title="Image Resizer", layout="centered")
+st.set_page_config(page_title="Photo Shop Editor", layout="centered")
 
 st.title("📸 Image Resizer App")
 st.markdown("Upload an image, resize it, and download the resized image.")
