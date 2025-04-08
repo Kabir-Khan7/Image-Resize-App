@@ -66,4 +66,42 @@ if selected_tool == "Resize Image":
 
 #Placeholder for convert format
 elif selected_tool == "Convert Format":
-    st.markdown("This feature is under construction. Stay tuned for updates!")
+    st.markdown("Upload an image and convert it to another format.")
+
+    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp", "pdf", "eps", "psd"])
+
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file)
+
+        st.image(image, caption="Orginal Image", use_container_width=True)
+
+        format_options = ["JPEG", "PNG", "GIF", "TIFF", "WEBP", "BMP", "PDF", "EPS", "PSD"]
+        selected_format = st.selectbox("Select Format", format_options)
+
+        file_extension = selected_format.lower()
+        convert_file_name = f"converted_image.{file_extension}"
+
+        #Convert and download
+        image_bytes = io.BytesIO()
+
+        #PIL cannot save RGBA as JPEG; conver it
+        if selected_format in ["JPEG", "PDF"] and image.mode in ("RGBA", "P"):
+            image = image.convert("RGB")
+
+        try:
+            image.save(image_bytes, format=selected_format)
+            image_bytes.seek(0)
+
+            st.download_button(
+                label=f"Download as {selected_format}",
+                data=image_bytes,
+                file_name=converted_file_name,
+                mime=f"image/{file_extension if selected_format != 'PDF' else 'pdf'}"
+            )
+        except Exception as e:
+            st.error(f"❌ Could not convert image: {str(e)}")
+    else:
+        st.info("Please upload an image to start converting.")
+
+
+            
