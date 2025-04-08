@@ -57,8 +57,8 @@ if selected_tool == "Resize Image":
 
         st.download_button(
             label="Download Resized Image",
-            data=io_buf
-            file_name="resized_img.jpg"
+            data=io_buf,
+            file_name="resized_img.jpg",
             mime="image/jpeg"
         )
     else:
@@ -67,4 +67,3 @@ if selected_tool == "Resize Image":
 #Placeholder for convert format
 elif selected_tool == "Convert Format":
     st.markdown("This feature is under construction. Stay tuned for updates!")
-    
