@@ -137,4 +137,40 @@ elif selected_tool == "Edge Detection":
         )
     else:
         st.info("Please upload an image to apply edge detection")
-    
+#Cropping Image
+elif selected_tool == "Crop Image":
+    st.markdown("Upload an image and crop it by specifying pixel boundaries.")
+    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file)
+        img_width, img_height = image.size
+
+        st.subheader("Orginal Image")
+        st.image(image, caption=f"Size: {img_width}x{img_height}", use_container_width=True)
+
+        st.subheader("Crop Settings")
+        left = st.number_input("Left (px)", min_value= 0, max_value=img_width -1, value=0)
+        top = st.number_input("Top (px)", min_value=0, max_value=img_width-1, value=0)
+        right = st.number_input("Right (px)", min_value= left+1, max_value=img_width, value=img_width)
+        bottom = st.number_input("Bottom (px)", min_value=top+1, max_value=img_height, value=img_height)
+
+        if left < right and top < bottom:
+            cropped_image = image.crop((left, top, right, bottom))
+            st.subheader("Cropped Image")
+            st.image(cropped_image, caption=f"Cropped Size: {right-left}x{botton-top}", use_container_width=True)
+
+           #Download Button 
+           image_bytes = io.BytesIO()
+           cropped_image.save(image_bytes, format="PNG")
+           image_bytes.seek(0)
+
+           st.download_button(
+            label="Download Cropped Image", 
+            data= image_bytes,
+            file_name="cropped_image.png",
+            mime="image/png"
+           )
+        else: 
+            st.error("Invalid crop dimension: ensure right > left and bottom > top.")
+    else: 
+        st.info("Please upload an image to crop it")
