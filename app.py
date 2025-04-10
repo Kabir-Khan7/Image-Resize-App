@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 from PIL import Image
 import io
+import cv2
 
 # Set Page Config
 st.set_page_config(page_title="Photo Shop Editor", layout="centered")
@@ -99,3 +100,41 @@ elif selected_tool == "Convert Format":
             st.error(f"❌ Could not convert image: {str(e)}")
     else:
         st.info("Please upload an image to start converting.")
+#Edge Detection
+elif selected_tool == "Edge Detection":
+    st.markdown("Apply edge detection to an image.")
+    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file).convert("RGB")
+        img_np = np.array(image)
+
+        st.subheader("Orginal Image")
+        st.image(image, use_container_width=True)
+
+        st.subheader("Canny Edge Detection Setting")
+        low_threshold = st.slider("Low Threshold", min_value=0, max_value= 255, value=50)
+        high_threshold = st.slider("High Threshold", min_value=0, max_value= 255, value=150)
+
+        #Convert to grayscale and apply Canny Edge Detection
+        gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
+        edges = cv2.Canny(gray, low_threshold, high_threshold)
+
+        st.subheader("Edge Detected Image")
+        st.image(edges, clamp=True, channels="GRAY", use_container_width=True)
+
+        #Prepare for download
+        edge_imp_pil = Image.fromarray(edges)
+        image_bytes = io.BytesIO()
+        edge_imp_pil.save(image_bytes, format="PNG")
+        image_bytes.seek(0)
+
+        st.download_button(
+            label="Download Edge Detected Image",
+            data= image_bytes,
+            file_name="edge_detected_image.png",
+            mime="image/png"
+        )
+    else:
+        st.info("Please upload an image to apply edge detection")
+    
