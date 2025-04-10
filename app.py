@@ -138,39 +138,79 @@ elif selected_tool == "Edge Detection":
     else:
         st.info("Please upload an image to apply edge detection")
 #Cropping Image
+# Edge Detection Feature
+elif selected_tool == "Edge Detection":
+    st.markdown("Apply edge detection to an image.")
+    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file).convert("RGB")
+        img_np = np.array(image)
+
+        st.subheader("Original Image")
+        st.image(image, use_container_width=True)
+
+        st.subheader("Canny Edge Detection Setting")
+        low_threshold = st.slider("Low Threshold", min_value=0, max_value=255, value=50)
+        high_threshold = st.slider("High Threshold", min_value=0, max_value=255, value=150)
+
+        # Convert to grayscale and apply Canny Edge Detection
+        gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
+        edges = cv2.Canny(gray, low_threshold, high_threshold)
+
+        st.subheader("Edge Detected Image")
+        st.image(edges, clamp=True, channels="GRAY", use_container_width=True)
+
+        # Prepare for download
+        edge_img_pil = Image.fromarray(edges)
+        image_bytes = io.BytesIO()
+        edge_img_pil.save(image_bytes, format="PNG")
+        image_bytes.seek(0)
+
+        st.download_button(
+            label="Download Edge Detected Image",
+            data=image_bytes,
+            file_name="edge_detected_image.png",
+            mime="image/png"
+        )
+    else:
+        st.info("Please upload an image to apply edge detection.")
+
+# Crop Image Feature
 elif selected_tool == "Crop Image":
     st.markdown("Upload an image and crop it by specifying pixel boundaries.")
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
         img_width, img_height = image.size
 
-        st.subheader("Orginal Image")
+        st.subheader("Original Image")
         st.image(image, caption=f"Size: {img_width}x{img_height}", use_container_width=True)
 
         st.subheader("Crop Settings")
-        left = st.number_input("Left (px)", min_value= 0, max_value=img_width -1, value=0)
-        top = st.number_input("Top (px)", min_value=0, max_value=img_width-1, value=0)
-        right = st.number_input("Right (px)", min_value= left+1, max_value=img_width, value=img_width)
-        bottom = st.number_input("Bottom (px)", min_value=top+1, max_value=img_height, value=img_height)
+        left = st.number_input("Left (px)", min_value=0, max_value=img_width - 1, value=0)
+        top = st.number_input("Top (px)", min_value=0, max_value=img_height - 1, value=0)
+        right = st.number_input("Right (px)", min_value=left + 1, max_value=img_width, value=img_width)
+        bottom = st.number_input("Bottom (px)", min_value=top + 1, max_value=img_height, value=img_height)
 
         if left < right and top < bottom:
             cropped_image = image.crop((left, top, right, bottom))
             st.subheader("Cropped Image")
-            st.image(cropped_image, caption=f"Cropped Size: {right-left}x{botton-top}", use_container_width=True)
+            st.image(cropped_image, caption=f"Cropped Size: {right - left}x{bottom - top}", use_container_width=True)
 
-           #Download Button 
-           image_bytes = io.BytesIO()
-           cropped_image.save(image_bytes, format="PNG")
-           image_bytes.seek(0)
+            # Download Button 
+            image_bytes = io.BytesIO()
+            cropped_image.save(image_bytes, format="PNG")
+            image_bytes.seek(0)
 
-           st.download_button(
-            label="Download Cropped Image", 
-            data= image_bytes,
-            file_name="cropped_image.png",
-            mime="image/png"
-           )
+            st.download_button(
+                label="Download Cropped Image", 
+                data=image_bytes,
+                file_name="cropped_image.png",
+                mime="image/png"
+            )
         else: 
-            st.error("Invalid crop dimension: ensure right > left and bottom > top.")
+            st.error("Invalid crop dimensions: ensure right > left and bottom > top.")
     else: 
-        st.info("Please upload an image to crop it")
+        st.info("Please upload an image to crop it.")
