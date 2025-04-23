@@ -218,24 +218,29 @@ elif selected_tool == "Crop Image":
     else: 
         st.info("Please upload an image to crop it.")
 elif selected_tool == "Video Detection":
+    import tempfile
+
     def detect_contours(frame): 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         blur = cv2.GaussianBlur(gray, (5, 5), 0)
         edges = cv2.Canny(blur, 50, 150)
-        contours = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         cv2.drawContours(frame, contours, -1, (0, 255, 0), 2)
         return frame
 
-#Webcame Transformer
+    # Webcam Transformer
     class ContourTransformer(VideoTransformerBase):
-        def  transform(self, frame):
+        def transform(self, frame):
             img = frame.to_ndarray(format='bgr24')
             img = detect_contours(img)
             return img
-    st.markdown("Contours Detection: Wwebcam or Video Upload")
+
+    st.markdown("### 📹 Contour Detection: Webcam or Video Upload")
     option = st.radio("Choose Input Method:", ["Use Webcam", "Upload Video"])
+
     if option == "Use Webcam":
         webrtc_streamer(key="webcam", video_transformer_factory=ContourTransformer)
+
     elif option == "Upload Video": 
         uploaded_file = st.file_uploader("Upload a video file", type=["mp4", "avi", "mov"])
         if uploaded_file is not None:
@@ -251,7 +256,6 @@ elif selected_tool == "Video Detection":
                     break
 
                 frame = detect_contours(frame)
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) 
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # ← Fix: Don't convert to grayscale before displaying
                 stframe.image(frame, channels="RGB")
             cap.release()
-  
