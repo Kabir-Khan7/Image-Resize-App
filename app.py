@@ -3,6 +3,9 @@ import numpy as np
 from PIL import Image
 import io
 import cv2
+from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
+import tempfile
+import av
 
 # Set Page Config
 st.set_page_config(page_title="Photo Shop Editor", layout="centered")
@@ -11,7 +14,7 @@ st.set_page_config(page_title="Photo Shop Editor", layout="centered")
 st.sidebar.title("🛠️ Tools")
 selected_tool = st.sidebar.radio(
     "Select a feature:", 
-    ["Resize Image", "Convert Format", "Crop Image", "Edge Detection", "Apply Filter"],
+    ["Resize Image", "Convert Format", "Crop Image", "Edge Detection", "Video Detection"],
     index=0
 )
 
@@ -214,3 +217,41 @@ elif selected_tool == "Crop Image":
             st.error("Invalid crop dimensions: ensure right > left and bottom > top.")
     else: 
         st.info("Please upload an image to crop it.")
+elif selected_tool == "Edge Detection":
+    def detect_contours(frame): 
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(gray, (5, 5), 0)
+        edges = cv2.Canny(blur, 50, 150)
+        contours = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cv2.drawContours(frame, contours, -1, (0, 255, 0), 2)
+        return frame
+
+#Webcame Transformer
+    class ContourTransformer(VideoTransformerBase):
+        def  transform(self, frame):
+            img = frame.to_ndarray(format='bgr24')
+            img = detect_contours(img)
+            return img
+    st.markdown("Contours Detection: Wwebcam or Video Upload")
+    option = st.radio("Choose Input Method:", ["Use Webcam", "Upload Video"])
+    if option == "Use Webcam":
+        webrtc_streamer(key="webcam", video_transformer_factory=ContourTransformer)
+    elif option == "Upload Video": 
+        uploaded_file = st.file_uploader("Upload a video file", type=["mp4", "avi", "mov"])
+        if uploaded_file is not None:
+            tfile = tempfile.NamedTemporaryFile(delete=False)
+            tfile.write(uploaded_file.read())
+
+            cap = cv2.VideoCapture(tfile.name)
+            stframe = st.empty() 
+
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret:
+                    break
+
+                frame = detect_contours(frame)
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) 
+                stframe.image(frame, channels="RGB")
+            cap.release()
+  
