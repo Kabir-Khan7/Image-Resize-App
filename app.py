@@ -217,7 +217,7 @@ elif selected_tool == "Crop Image":
             st.error("Invalid crop dimensions: ensure right > left and bottom > top.")
     else: 
         st.info("Please upload an image to crop it.")
-elif selected_tool == "Edge Detection":
+elif selected_tool == "Video Detection":
     def detect_contours(frame): 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         blur = cv2.GaussianBlur(gray, (5, 5), 0)
